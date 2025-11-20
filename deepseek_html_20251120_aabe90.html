@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Kelas - Aplikasi Guru & Murid</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #f5f5f5;
+            --dark: #333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .login-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 15px;
+        }
+        
+        .progress-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-btn:hover:not(.active) {
+            background-color: var(--light);
+        }
+        
+        .progress-section {
+            display: none;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .progress-section.active {
+            display: block;
+        }
+        
+        .student-progress {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--light);
+        }
+        
+        .student-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .student-points {
+            background-color: var(--warning);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .points-progress {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+        
+        .assignment-progress {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+            margin: 0 10px;
+        }
+        
+        .stat-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background-color: #219653;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--light);
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .star {
+            color: var(--warning);
+            font-size: 18px;
+        }
+        
+        .completed {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        .incomplete {
+            color: var(--danger);
+            font-weight: bold;
+        }
+        
+        .login-section {
+            max-width: 400px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .login-section h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .alert-error {
+            background-color: #ffebee;
+            color: var(--danger);
+            border: 1px solid #ffcdd2;
+        }
+        
+        .logout-btn {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .input-mode-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .input-mode-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .input-mode-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .input-mode-btn:hover:not(.active) {
+            background-color: var(--light);
+        }
+        
+        .input-section {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .input-section.active {
+            display: block;
+        }
+        
+        .student-checkbox-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .checkbox-item input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .assignment-item {
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .assignment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .assignment-title {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .assignment-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .assignment-students {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .student-tag {
+            background-color: var(--secondary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .student-management {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .student-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .student-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .student-list-item:last-child {
+            border-bottom: none;
+        }
+        
+        .student-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .student-actions button {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .assignment-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .assignment-actions button {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .edit-form {
+            display: none;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .edit-form.active {
+            display: block;
+        }
+        
+        .edit-form .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .edit-form input {
+            padding: 8px;
+            font-size: 14px;
+        }
+        
+        .edit-form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .edit-form-buttons button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        
+        .download-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .download-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .download-options button {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                margin: 10px 0;
+            }
+            
+            .progress-tabs {
+                flex-direction: column;
+            }
+            
+            .login-btn {
+                position: static;
+                margin-top: 10px;
+            }
+            
+            header {
+                text-align: center;
+                padding-bottom: 60px;
+            }
+            
+            .input-mode-tabs {
+                flex-direction: column;
+            }
+            
+            .student-actions {
+                flex-direction: column;
+            }
+            
+            .assignment-actions {
+                flex-direction: column;
+            }
+            
+            .download-options {
+                flex-direction: column;
+            }
+            
+            .download-options button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Progress Kelas</h1>
+            <p>Pantau Progress Keaktifan dan Tugas Siswa</p>
+            <button id="loginBtn" class="login-btn">Login as Teacher</button>
+        </header>
+        
+        <!-- Tampilan Progress untuk Murid -->
+        <div id="studentView">
+            <div class="progress-tabs">
+                <button class="tab-btn active" data-tab="points">Progress Keaktifan</button>
+                <button class="tab-btn" data-tab="assignments">Progress Tugas</button>
+            </div>
+            
+            <!-- Progress Keaktifan -->
+            <div id="pointsProgress" class="progress-section active">
+                <h2>Progress Keaktifan Siswa</h2>
+                <p>Berdasarkan poin bintang yang diperoleh dari partisipasi di kelas</p>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Rata-rata Poin</h3>
+                        <div class="stat-value" id="avgPoints">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Poin Tertinggi</h3>
+                        <div class="stat-value" id="maxPoints">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Siswa Aktif</h3>
+                        <div class="stat-value" id="activeStudents">0</div>
+                    </div>
+                </div>
+                
+                <div id="pointsProgressList">
+                    <!-- Daftar progress keaktifan akan ditampilkan di sini -->
+                </div>
+            </div>
+            
+            <!-- Progress Tugas -->
+            <div id="assignmentsProgress" class="progress-section">
+                <h2>Progress Penyelesaian Tugas</h2>
+                <p>Status kelengkapan tugas yang diberikan kepada siswa</p>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Tugas Lengkap</h3>
+                        <div class="stat-value" id="completedTasks">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Siswa</h3>
+                        <div class="stat-value" id="totalStudents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Perlu Perhatian</h3>
+                        <div class="stat-value" id="incompleteStudents">0</div>
+                    </div>
+                </div>
+                
+                <div id="assignmentsProgressList">
+                    <!-- Daftar progress tugas akan ditampilkan di sini -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section Login Guru -->
+        <div id="teacherLoginSection" class="login-section hidden">
+            <h2>Login Guru</h2>
+            <div id="teacherLoginAlert" class="alert hidden"></div>
+            <form id="teacherLoginForm">
+                <div class="form-group">
+                    <label for="teacherUsername">Username</label>
+                    <input type="text" id="teacherUsername" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="teacherPassword">Password</label>
+                    <input type="password" id="teacherPassword" required>
+                </div>
+                
+                <button type="submit" style="width: 100%;">Login</button>
+            </form>
+            <button id="backToStudentView" class="logout-btn" style="width: 100%; margin-top: 15px;">Kembali ke Tampilan Murid</button>
+        </div>
+        
+        <!-- Mode Guru -->
+        <div id="teacherView" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Mode Guru - Kelola Data Siswa</h2>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Siswa</h3>
+                    <div class="stat-value" id="teacherTotalStudents">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Rata-rata Poin</h3>
+                    <div class="stat-value" id="teacherAvgPoints">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Tugas Lengkap</h3>
+                    <div class="stat-value" id="teacherCompletedTasks">0%</div>
+                </div>
+            </div>
+
+            <!-- Section Download Data -->
+            <div class="download-section">
+                <h3>Download Data</h3>
+                <p>Unduh data progress siswa dalam format Excel untuk keperluan dokumentasi atau analisis lebih lanjut.</p>
+                <div class="download-options">
+                    <button id="downloadStudentsBtn" class="btn-success">
+                        📊 Download Data Siswa
+                    </button>
+                    <button id="downloadAssignmentsBtn" class="btn-success">
+                        📝 Download Data Tugas
+                    </button>
+                    <button id="downloadSummaryBtn" class="btn-success">
+                        📋 Download Ringkasan Kelas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kelola Data Siswa -->
+            <div class="student-management">
+                <h3>Kelola Data Siswa</h3>
+                <form id="addStudentForm">
+                    <div class="form-group">
+                        <label for="newStudentName">Tambah Siswa Baru</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="newStudentName" placeholder="Masukkan nama siswa" required>
+                            <button type="submit" class="btn-secondary">Tambah Siswa</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="student-list" id="studentList">
+                    <!-- Daftar siswa akan ditampilkan di sini -->
+                </div>
+            </div>
+            
+            <!-- Tabs Mode Input -->
+            <div class="input-mode-tabs">
+                <button class="input-mode-btn active" data-input-mode="points">Input Poin Keaktifan</button>
+                <button class="input-mode-btn" data-input-mode="assignment">Input Kelengkapan Tugas</button>
+            </div>
+            
+            <!-- Input Poin Keaktifan -->
+            <div id="pointsInputSection" class="input-section active">
+                <h3>Input Poin Keaktifan Siswa</h3>
+                <form id="pointsForm">
+                    <div class="form-group">
+                        <label for="studentNamePoints">Nama Siswa</label>
+                        <select id="studentNamePoints" required>
+                            <option value="">Pilih Siswa</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="studentPoints">Poin Bintang</label>
+                        <input type="number" id="studentPoints" min="0" max="10" required>
+                        <small>Masukkan poin antara 0-10</small>
+                    </div>
+                    
+                    <button type="submit" class="btn-secondary">Tambah Poin</button>
+                </form>
+            </div>
+            
+            <!-- Input Kelengkapan Tugas -->
+            <div id="assignmentInputSection" class="input-section">
+                <h3>Input Kelengkapan Tugas</h3>
+                <form id="assignmentForm">
+                    <div class="form-group">
+                        <label for="assignmentName">Nama Tugas</label>
+                        <input type="text" id="assignmentName" placeholder="Contoh: Tugas Matematika Bab 1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Siswa yang Telah Melengkapi Tugas:</label>
+                        <div class="student-checkbox-list" id="studentCheckboxList">
+                            <!-- Daftar checkbox siswa akan ditampilkan di sini -->
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-secondary">Simpan Data Tugas</button>
+                </form>
+            </div>
+            
+            <!-- Daftar Tugas yang Telah Dibuat -->
+            <h3 style="margin-top: 30px;">Daftar Tugas Kelas</h3>
+            <div id="assignmentsList">
+                <!-- Daftar tugas akan ditampilkan di sini -->
+            </div>
+            
+            <!-- Data Seluruh Siswa -->
+            <h3 style="margin-top: 40px;">Data Seluruh Siswa</h3>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Nama Siswa</th>
+                        <th>Total Poin</th>
+                        <th>Tugas Diselesaikan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <!-- Data siswa akan ditampilkan di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Data siswa dan tugas (disimpan di localStorage)
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let assignments = JSON.parse(localStorage.getItem('assignments')) || [];
+        
+        // Status login
+        let isTeacherLoggedIn = false;
+        
+        // Kredensial login guru
+        const TEACHER_CREDENTIALS = {
+            username: 'teacher',
+            password: 'bismillah'
+        };
+        
+        // Elemen DOM
+        const loginBtn = document.getElementById('loginBtn');
+        const studentView = document.getElementById('studentView');
+        const teacherLoginSection = document.getElementById('teacherLoginSection');
+        const teacherView = document.getElementById('teacherView');
+        const backToStudentView = document.getElementById('backToStudentView');
+        const teacherLoginForm = document.getElementById('teacherLoginForm');
+        const teacherLoginAlert = document.getElementById('teacherLoginAlert');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const downloadStudentsBtn = document.getElementById('downloadStudentsBtn');
+        const downloadAssignmentsBtn = document.getElementById('downloadAssignmentsBtn');
+        const downloadSummaryBtn = document.getElementById('downloadSummaryBtn');
+        
+        // Form elements
+        const addStudentForm = document.getElementById('addStudentForm');
+        const pointsForm = document.getElementById('pointsForm');
+        const assignmentForm = document.getElementById('assignmentForm');
+        const studentNamePoints = document.getElementById('studentNamePoints');
+        const studentPoints = document.getElementById('studentPoints');
+        const assignmentName = document.getElementById('assignmentName');
+        const studentCheckboxList = document.getElementById('studentCheckboxList');
+        const studentList = document.getElementById('studentList');
+        const newStudentName = document.getElementById('newStudentName');
+        
+        // Display elements
+        const studentTableBody = document.getElementById('studentTableBody');
+        const pointsProgressList = document.getElementById('pointsProgressList');
+        const assignmentsProgressList = document.getElementById('assignmentsProgressList');
+        const assignmentsList = document.getElementById('assignmentsList');
+        
+        // Stat elements
+        const avgPointsElement = document.getElementById('avgPoints');
+        const maxPointsElement = document.getElementById('maxPoints');
+        const activeStudentsElement = document.getElementById('activeStudents');
+        const completedTasksElement = document.getElementById('completedTasks');
+        const totalStudentsElement = document.getElementById('totalStudents');
+        const incompleteStudentsElement = document.getElementById('incompleteStudents');
+        const teacherTotalStudentsElement = document.getElementById('teacherTotalStudents');
+        const teacherAvgPointsElement = document.getElementById('teacherAvgPoints');
+        const teacherCompletedTasksElement = document.getElementById('teacherCompletedTasks');
+        
+        // Tab buttons
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const progressSections = document.querySelectorAll('.progress-section');
+        const inputModeBtns = document.querySelectorAll('.input-mode-btn');
+        const inputSections = document.querySelectorAll('.input-section');
+        
+        // Event Listeners
+        loginBtn.addEventListener('click', showTeacherLogin);
+        backToStudentView.addEventListener('click', showStudentView);
+        teacherLoginForm.addEventListener('submit', handleTeacherLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        downloadStudentsBtn.addEventListener('click', downloadStudentsExcel);
+        downloadAssignmentsBtn.addEventListener('click', downloadAssignmentsExcel);
+        downloadSummaryBtn.addEventListener('click', downloadSummaryExcel);
+        addStudentForm.addEventListener('submit', handleAddStudent);
+        pointsForm.addEventListener('submit', handlePointsSubmit);
+        assignmentForm.addEventListener('submit', handleAssignmentSubmit);
+        
+        // Tab switching untuk progress siswa
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                
+                // Update active tab button
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Show corresponding section
+                progressSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === `${tabId}Progress`) {
+                        section.classList.add('active');
+                    }
+                });
+                
+                // Update the progress display
+                if (tabId === 'points') {
+                    renderPointsProgress();
+                } else if (tabId === 'assignments') {
+                    renderAssignmentsProgress();
+                }
+            });
+        });
+        
+        // Tab switching untuk mode input guru
+        inputModeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const inputMode = btn.getAttribute('data-input-mode');
+                
+                // Update active tab button
+                inputModeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Show corresponding section
+                inputSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === `${inputMode}InputSection`) {
+                        section.classList.add('active');
+                    }
+                });
+                
+                // Update form jika perlu
+                if (inputMode === 'assignment') {
+                    renderStudentCheckboxes();
+                }
+            });
+        });
+        
+        // Fungsi untuk menampilkan form login guru
+        function showTeacherLogin() {
+            studentView.classList.add('hidden');
+            teacherLoginSection.classList.remove('hidden');
+            teacherLoginAlert.classList.add('hidden');
+        }
+        
+        // Fungsi kembali ke tampilan murid
+        function showStudentView() {
+            teacherLoginSection.classList.add('hidden');
+            teacherView.classList.add('hidden');
+            studentView.classList.remove('hidden');
+            updateStudentView();
+        }
+        
+        // Fungsi handle login guru
+        function handleTeacherLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('teacherUsername').value;
+            const password = document.getElementById('teacherPassword').value;
+            
+            if (username === TEACHER_CREDENTIALS.username && password === TEACHER_CREDENTIALS.password) {
+                // Login berhasil
+                isTeacherLoggedIn = true;
+                teacherLoginSection.classList.add('hidden');
+                teacherView.classList.remove('hidden');
+                updateTeacherView();
+                teacherLoginForm.reset();
+            } else {
+                // Login gagal
+                teacherLoginAlert.textContent = 'Username atau password salah!';
+                teacherLoginAlert.className = 'alert alert-error';
+                teacherLoginAlert.classList.remove('hidden');
+            }
+        }
+        
+        // Fungsi logout
+        function handleLogout() {
+            isTeacherLoggedIn = false;
+            teacherView.classList.add('hidden');
+            studentView.classList.remove('hidden');
+            updateStudentView();
+        }
+        
+        // Fungsi download data siswa
+        function downloadStudentsExcel() {
+            if (students.length === 0) {
+                alert('Tidak ada data siswa untuk diunduh!');
+                return;
+            }
+            
+            const worksheetData = [
+                ['Nama Siswa', 'Total Poin', 'Persentase Keaktifan', 'Tugas Diselesaikan', 'Total Tugas', 'Persentase Tugas']
+            ];
+            
+            const totalAssignments = assignments.length;
+            
+            students.forEach(student => {
+                const completedAssignments = student.completedAssignments ? student.completedAssignments.length : 0;
+                const activityPercentage = totalAssignments > 0 ? 
+                    Math.round((student.points / (totalAssignments * 10)) * 100) : 0;
+                const assignmentPercentage = totalAssignments > 0 ? 
+                    Math.round((completedAssignments / totalAssignments) * 100) : 0;
+                
+                worksheetData.push([
+                    student.name,
+                    student.points,
+                    `${activityPercentage}%`,
+                    completedAssignments,
+                    totalAssignments,
+                    `${assignmentPercentage}%`
+                ]);
+            });
+            
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Siswa');
+            
+            // Download file
+            const fileName = `Data_Siswa_Kelas_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            alert('Data siswa berhasil diunduh!');
+        }
+        
+        // Fungsi download data tugas
+        function downloadAssignmentsExcel() {
+            if (assignments.length === 0) {
+                alert('Tidak ada data tugas untuk diunduh!');
+                return;
+            }
+            
+            const worksheetData = [
+                ['Nama Tugas', 'Tanggal', 'Jumlah Siswa Selesai', 'Total Siswa', 'Persentase Penyelesaian', 'Siswa yang Menyelesaikan']
+            ];
+            
+            assignments.forEach(assignment => {
+                const completionRate = Math.round((assignment.completedStudents.length / students.length) * 100);
+                const studentsList = assignment.completedStudents.join(', ');
+                
+                worksheetData.push([
+                    assignment.title,
+                    assignment.date,
+                    assignment.completedStudents.length,
+                    students.length,
+                    `${completionRate}%`,
+                    studentsList || '-'
+                ]);
+            });
+            
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Tugas');
+            
+            // Download file
+            const fileName = `Data_Tugas_Kelas_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            alert('Data tugas berhasil diunduh!');
+        }
+        
+        // Fungsi download ringkasan kelas
+        function downloadSummaryExcel() {
+            if (students.length === 0) {
+                alert('Tidak ada data untuk diunduh!');
+                return;
+            }
+            
+            // Buat workbook dengan multiple sheets
+            const workbook = XLSX.utils.book_new();
+            
+            // Sheet 1: Ringkasan Kelas
+            const summaryData = [
+                ['RINGKASAN KELAS'],
+                [''],
+                ['Total Siswa', students.length],
+                ['Rata-rata Poin', calculateAveragePoints()],
+                ['Total Tugas', assignments.length],
+                ['Rata-rata Penyelesaian Tugas', `${calculateAverageAssignmentCompletion()}%`],
+                ['Siswa dengan Poin Tertinggi', getTopStudent()],
+                [''],
+                ['STATISTIK DETAIL'],
+                ['Poin Tertinggi', getMaxPoints()],
+                ['Poin Terendah', getMinPoints()],
+                ['Siswa Aktif (poin > 0)', getActiveStudentsCount()],
+                ['Tugas dengan Penyelesaian Tertinggi', getBestAssignment()],
+                ['Tugas dengan Penyelesaian Terendah', getWorstAssignment()]
+            ];
+            
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(workbook, summarySheet, 'Ringkasan Kelas');
+            
+            // Sheet 2: Data Siswa
+            const studentsData = [
+                ['Nama Siswa', 'Total Poin', 'Tugas Diselesaikan', 'Total Tugas', 'Persentase Tugas', 'Status']
+            ];
+            
+            const totalAssignments = assignments.length;
+            
+            students.forEach(student => {
+                const completedAssignments = student.completedAssignments ? student.completedAssignments.length : 0;
+                const assignmentPercentage = totalAssignments > 0 ? 
+                    Math.round((completedAssignments / totalAssignments) * 100) : 0;
+                const status = assignmentPercentage === 100 ? 'Lengkap' : 
+                              assignmentPercentage >= 70 ? 'Baik' :
+                              assignmentPercentage >= 50 ? 'Cukup' : 'Perlu Perhatian';
+                
+                studentsData.push([
+                    student.name,
+                    student.points,
+                    completedAssignments,
+                    totalAssignments,
+                    `${assignmentPercentage}%`,
+                    status
+                ]);
+            });
+            
+            const studentsSheet = XLSX.utils.aoa_to_sheet(studentsData);
+            XLSX.utils.book_append_sheet(workbook, studentsSheet, 'Data Siswa');
+            
+            // Sheet 3: Data Tugas
+            if (assignments.length > 0) {
+                const assignmentsData = [
+                    ['Nama Tugas', 'Tanggal', 'Siswa Selesai', 'Total Siswa', 'Persentase']
+                ];
+                
+                assignments.forEach(assignment => {
+                    const completionRate = Math.round((assignment.completedStudents.length / students.length) * 100);
+                    
+                    assignmentsData.push([
+                        assignment.title,
+                        assignment.date,
+                        assignment.completedStudents.length,
+                        students.length,
+                        `${completionRate}%`
+                    ]);
+                });
+                
+                const assignmentsSheet = XLSX.utils.aoa_to_sheet(assignmentsData);
+                XLSX.utils.book_append_sheet(workbook, assignmentsSheet, 'Data Tugas');
+            }
+            
+            // Download file
+            const fileName = `Laporan_Kelas_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            alert('Laporan kelas berhasil diunduh!');
+        }
+        
+        // Fungsi helper untuk ringkasan
+        function calculateAveragePoints() {
+            const totalPoints = students.reduce((sum, student) => sum + student.points, 0);
+            return students.length > 0 ? (totalPoints / students.length).toFixed(1) : 0;
+        }
+        
+        function calculateAverageAssignmentCompletion() {
+            const totalAssignments = assignments.length;
+            if (totalAssignments === 0) return 0;
+            
+            const totalCompleted = students.reduce((sum, student) => 
+                sum + (student.completedAssignments ? student.completedAssignments.length : 0), 0);
+            
+            return Math.round((totalCompleted / (students.length * totalAssignments)) * 100);
+        }
+        
+        function getTopStudent() {
+            if (students.length === 0) return '-';
+            const topStudent = students.reduce((prev, current) => 
+                (prev.points > current.points) ? prev : current);
+            return `${topStudent.name} (${topStudent.points} poin)`;
+        }
+        
+        function getMaxPoints() {
+            return students.length > 0 ? Math.max(...students.map(s => s.points)) : 0;
+        }
+        
+        function getMinPoints() {
+            return students.length > 0 ? Math.min(...students.map(s => s.points)) : 0;
+        }
+        
+        function getActiveStudentsCount() {
+            return students.filter(s => s.points > 0).length;
+        }
+        
+        function getBestAssignment() {
+            if (assignments.length === 0) return '-';
+            const bestAssignment = assignments.reduce((prev, current) => 
+                (prev.completedStudents.length > current.completedStudents.length) ? prev : current);
+            return `${bestAssignment.title} (${Math.round((bestAssignment.completedStudents.length / students.length) * 100)}%)`;
+        }
+        
+        function getWorstAssignment() {
+            if (assignments.length === 0) return '-';
+            const worstAssignment = assignments.reduce((prev, current) => 
+                (prev.completedStudents.length < current.completedStudents.length) ? prev : current);
+            return `${worstAssignment.title} (${Math.round((worstAssignment.completedStudents.length / students.length) * 100)}%)`;
+        }
+        
+        // Fungsi tambah siswa baru
+        function handleAddStudent(e) {
+            e.preventDefault();
+            
+            const studentName = newStudentName.value.trim();
+            
+            if (!studentName) {
+                alert('Masukkan nama siswa terlebih dahulu!');
+                return;
+            }
+            
+            // Cek apakah siswa sudah ada
+            const existingStudent = students.find(s => s.name.toLowerCase() === studentName.toLowerCase());
+            if (existingStudent) {
+                alert(`Siswa dengan nama "${studentName}" sudah ada!`);
+                return;
+            }
+            
+            // Tambah siswa baru
+            students.push({
+                name: studentName,
+                points: 0,
+                completedAssignments: []
+            });
+            
+            // Simpan ke localStorage
+            localStorage.setItem('students', JSON.stringify(students));
+            
+            // Reset form
+            addStudentForm.reset();
+            
+            // Perbarui tampilan
+            updateTeacherView();
+            updateStudentView();
+            
+            alert(`Siswa "${studentName}" berhasil ditambahkan!`);
+        }
+        
+        // Fungsi handle input poin
+        function handlePointsSubmit(e) {
+            e.preventDefault();
+            
+            const studentName = studentNamePoints.value;
+            const points = parseInt(studentPoints.value);
+            
+            if (!studentName) {
+                alert('Pilih siswa terlebih dahulu!');
+                return;
+            }
+            
+            // Cari siswa dan tambahkan poin
+            const student = students.find(s => s.name === studentName);
+            if (student) {
+                student.points += points;
+            }
+            
+            // Simpan ke localStorage
+            localStorage.setItem('students', JSON.stringify(students));
+            
+            // Reset form
+            pointsForm.reset();
+            
+            // Perbarui tampilan
+            updateTeacherView();
+            updateStudentView();
+            
+            alert(`Poin berhasil ditambahkan untuk ${studentName}!`);
+        }
+        
+        // Fungsi handle input tugas
+        function handleAssignmentSubmit(e) {
+            e.preventDefault();
+            
+            const assignmentTitle = assignmentName.value;
+            const completedStudents = [];
+            
+            // Ambil siswa yang dicentang
+            const checkboxes = studentCheckboxList.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                completedStudents.push(checkbox.value);
+            });
+            
+            if (!assignmentTitle) {
+                alert('Masukkan nama tugas terlebih dahulu!');
+                return;
+            }
+            
+            if (completedStudents.length === 0) {
+                alert('Pilih setidaknya satu siswa yang telah menyelesaikan tugas!');
+                return;
+            }
+            
+            // Buat tugas baru
+            const newAssignment = {
+                id: Date.now().toString(),
+                title: assignmentTitle,
+                date: new Date().toLocaleDateString('id-ID'),
+                completedStudents: completedStudents
+            };
+            
+            assignments.push(newAssignment);
+            
+            // Update status tugas di data siswa
+            students.forEach(student => {
+                if (completedStudents.includes(student.name)) {
+                    if (!student.completedAssignments) {
+                        student.completedAssignments = [];
+                    }
+                    if (!student.completedAssignments.includes(newAssignment.id)) {
+                        student.completedAssignments.push(newAssignment.id);
+                    }
+                }
+            });
+            
+            // Simpan ke localStorage
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('assignments', JSON.stringify(assignments));
+            
+            // Reset form
+            assignmentForm.reset();
+            
+            // Perbarui tampilan
+            updateTeacherView();
+            updateStudentView();
+            
+            alert(`Tugas "${assignmentTitle}" berhasil disimpan!`);
+        }
+        
+        // Update tampilan untuk murid
+        function updateStudentView() {
+            renderPointsProgress();
+            renderAssignmentsProgress();
+            updateStudentStats();
+        }
+        
+        // Update tampilan untuk guru
+        function updateTeacherView() {
+            renderStudentList();
+            renderStudentDropdown();
+            renderStudentCheckboxes();
+            renderStudentTable();
+            renderAssignmentsList();
+            updateTeacherStats();
+        }
+        
+        // Render daftar siswa untuk manajemen
+        function renderStudentList() {
+            studentList.innerHTML = '';
+            
+            if (students.length === 0) {
+                studentList.innerHTML = '<p style="text-align: center; color: #666;">Belum ada siswa</p>';
+                return;
+            }
+            
+            students.forEach(student => {
+                const listItem = document.createElement('div');
+                listItem.className = 'student-list-item';
+                
+                listItem.innerHTML = `
+                    <div style="flex: 1;">
+                        <span>${student.name}</span>
+                        <span style="color: #666; font-size: 14px; margin-left: 10px;">${student.points} poin</span>
+                    </div>
+                    <div class="student-actions">
+                        <button onclick="showEditStudentForm('${student.name}')" class="btn-warning">Edit Nama</button>
+                        <button onclick="removeStudent('${student.name}')" class="btn-danger">Hapus</button>
+                    </div>
+                    <div id="edit-form-${student.name.replace(/\s+/g, '-')}" class="edit-form">
+                        <div class="form-group">
+                            <label>Edit Nama Siswa:</label>
+                            <input type="text" id="edit-student-${student.name.replace(/\s+/g, '-')}" value="${student.name}" required>
+                        </div>
+                        <div class="edit-form-buttons">
+                            <button onclick="updateStudentName('${student.name}')" class="btn-secondary">Simpan</button>
+                            <button onclick="hideEditStudentForm('${student.name}')" class="logout-btn">Batal</button>
+                        </div>
+                    </div>
+                `;
+                
+                studentList.appendChild(listItem);
+            });
+        }
+        
+        // Render dropdown siswa untuk input poin
+        function renderStudentDropdown() {
+            studentNamePoints.innerHTML = '<option value="">Pilih Siswa</option>';
+            
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.name;
+                option.textContent = student.name;
+                studentNamePoints.appendChild(option);
+            });
+        }
+        
+        // Render checkbox siswa untuk input tugas
+        function renderStudentCheckboxes() {
+            studentCheckboxList.innerHTML = '';
+            
+            if (students.length === 0) {
+                studentCheckboxList.innerHTML = '<p style="text-align: center; color: #666;">Belum ada siswa</p>';
+                return;
+            }
+            
+            students.forEach(student => {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                
+                checkboxItem.innerHTML = `
+                    <input type="checkbox" id="student-${student.name.replace(/\s+/g, '-')}" value="${student.name}">
+                    <label for="student-${student.name.replace(/\s+/g, '-')}">${student.name} (${student.points} poin)</label>
+                `;
+                
+                studentCheckboxList.appendChild(checkboxItem);
+            });
+        }
+        
+        // Render progress keaktifan (poin)
+        function renderPointsProgress() {
+            pointsProgressList.innerHTML = '';
+            
+            if (students.length === 0) {
+                pointsProgressList.innerHTML = '<p style="text-align: center; color: #666;">Belum ada data siswa</p>';
+                return;
+            }
+            
+            // Urutkan berdasarkan poin (tertinggi ke terendah)
+            const sortedStudents = [...students].sort((a, b) => b.points - a.points);
+            const maxPoints = Math.max(...students.map(s => s.points), 1); // Minimal 1 untuk menghindari pembagian 0
+            
+            sortedStudents.forEach(student => {
+                const progressItem = document.createElement('div');
+                progressItem.className = 'student-progress';
+                
+                const percentage = (student.points / maxPoints) * 100;
+                
+                progressItem.innerHTML = `
+                    <div class="student-name">
+                        ${student.name}
+                        <span class="student-points">${student.points} ★</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill points-progress" style="width: ${percentage}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>0</span>
+                        <span>${maxPoints} poin</span>
+                    </div>
+                `;
+                
+                pointsProgressList.appendChild(progressItem);
+            });
+        }
+        
+        // Render progress tugas
+        function renderAssignmentsProgress() {
+            assignmentsProgressList.innerHTML = '';
+            
+            if (students.length === 0) {
+                assignmentsProgressList.innerHTML = '<p style="text-align: center; color: #666;">Belum ada data siswa</p>';
+                return;
+            }
+            
+            // Hitung persentase penyelesaian tugas per siswa
+            const totalAssignments = assignments.length;
+            
+            students.forEach(student => {
+                const progressItem = document.createElement('div');
+                progressItem.className = 'student-progress';
+                
+                const completedCount = student.completedAssignments ? student.completedAssignments.length : 0;
+                const percentage = totalAssignments > 0 ? (completedCount / totalAssignments) * 100 : 0;
+                const statusText = totalAssignments > 0 ? `${completedCount}/${totalAssignments} tugas` : 'Belum ada tugas';
+                
+                progressItem.innerHTML = `
+                    <div class="student-name">
+                        ${student.name}
+                        <span class="${percentage === 100 ? 'completed' : 'incomplete'}">${statusText}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill assignment-progress" style="width: ${percentage}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>0%</span>
+                        <span>100%</span>
+                    </div>
+                `;
+                
+                assignmentsProgressList.appendChild(progressItem);
+            });
+        }
+        
+        // Render daftar tugas untuk guru
+        function renderAssignmentsList() {
+            assignmentsList.innerHTML = '';
+            
+            if (assignments.length === 0) {
+                assignmentsList.innerHTML = '<p style="text-align: center; color: #666;">Belum ada tugas yang dibuat</p>';
+                return;
+            }
+            
+            assignments.forEach(assignment => {
+                const assignmentItem = document.createElement('div');
+                assignmentItem.className = 'assignment-item';
+                
+                const completionRate = Math.round((assignment.completedStudents.length / students.length) * 100);
+                
+                assignmentItem.innerHTML = `
+                    <div class="assignment-header">
+                        <div class="assignment-title">${assignment.title}</div>
+                        <div>
+                            <span class="assignment-date">${assignment.date}</span>
+                            <span style="margin-left: 10px; color: ${completionRate === 100 ? 'var(--secondary)' : 'var(--warning)'}; font-weight: bold;">
+                                ${completionRate}% selesai
+                            </span>
+                        </div>
+                    </div>
+                    <div class="assignment-students">
+                        ${assignment.completedStudents.length > 0 ? 
+                            assignment.completedStudents.map(student => 
+                                `<span class="student-tag">${student}</span>`
+                            ).join('') : 
+                            '<span style="color: #666; font-style: italic;">Belum ada siswa yang menyelesaikan</span>'
+                        }
+                    </div>
+                    <div class="assignment-actions">
+                        <button onclick="editAssignment('${assignment.id}')" class="btn-warning">Edit Tugas</button>
+                        <button onclick="deleteAssignment('${assignment.id}')" class="btn-danger">Hapus Tugas</button>
+                    </div>
+                `;
+                
+                assignmentsList.appendChild(assignmentItem);
+            });
+        }
+        
+        // Update statistik untuk tampilan murid
+        function updateStudentStats() {
+            const totalStudents = students.length;
+            const totalPoints = students.reduce((sum, student) => sum + student.points, 0);
+            const avgPoints = totalStudents > 0 ? (totalPoints / totalStudents).toFixed(1) : 0;
+            const maxPoints = totalStudents > 0 ? Math.max(...students.map(s => s.points)) : 0;
+            const activeStudents = totalStudents > 0 ? students.filter(s => s.points > 0).length : 0;
+            const totalAssignments = assignments.length;
+            const completedTasks = totalStudents > 0 && totalAssignments > 0 ? 
+                Math.round((students.reduce((sum, student) => sum + (student.completedAssignments ? student.completedAssignments.length : 0), 0) / (totalStudents * totalAssignments)) * 100) : 0;
+            const incompleteStudents = totalStudents > 0 ? 
+                students.filter(s => !s.completedAssignments || s.completedAssignments.length < totalAssignments).length : 0;
+            
+            avgPointsElement.textContent = avgPoints;
+            maxPointsElement.textContent = maxPoints;
+            activeStudentsElement.textContent = activeStudents;
+            completedTasksElement.textContent = `${completedTasks}%`;
+            totalStudentsElement.textContent = totalStudents;
+            incompleteStudentsElement.textContent = incompleteStudents;
+        }
+        
+        // Update statistik untuk tampilan guru
+        function updateTeacherStats() {
+            const totalStudents = students.length;
+            const totalPoints = students.reduce((sum, student) => sum + student.points, 0);
+            const avgPoints = totalStudents > 0 ? (totalPoints / totalStudents).toFixed(1) : 0;
+            const totalAssignments = assignments.length;
+            const completedTasks = totalStudents > 0 && totalAssignments > 0 ? 
+                Math.round((students.reduce((sum, student) => sum + (student.completedAssignments ? student.completedAssignments.length : 0), 0) / (totalStudents * totalAssignments)) * 100) : 0;
+            
+            teacherTotalStudentsElement.textContent = totalStudents;
+            teacherAvgPointsElement.textContent = avgPoints;
+            teacherCompletedTasksElement.textContent = `${completedTasks}%`;
+        }
+        
+        // Render tabel untuk guru
+        function renderStudentTable() {
+            studentTableBody.innerHTML = '';
+            
+            if (students.length === 0) {
+                studentTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #666;">Belum ada data siswa</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const totalAssignments = assignments.length;
+            
+            students.forEach((student, index) => {
+                const row = document.createElement('tr');
+                const completedCount = student.completedAssignments ? student.completedAssignments.length : 0;
+                
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.points} <span class="star">★</span></td>
+                    <td class="${completedCount === totalAssignments ? 'completed' : 'incomplete'}">
+                        ${completedCount}/${totalAssignments}
+                    </td>
+                    <td>
+                        <button onclick="editStudentPoints('${student.name}')" class="btn-warning">Edit Poin</button>
+                        <button onclick="removeStudent('${student.name}')" class="btn-danger">Hapus</button>
+                    </td>
+                `;
+                
+                studentTableBody.appendChild(row);
+            });
+        }
+        
+        // Fungsi untuk menampilkan form edit siswa
+        function showEditStudentForm(studentName) {
+            const editForm = document.getElementById(`edit-form-${studentName.replace(/\s+/g, '-')}`);
+            editForm.classList.add('active');
+        }
+        
+        // Fungsi untuk menyembunyikan form edit siswa
+        function hideEditStudentForm(studentName) {
+            const editForm = document.getElementById(`edit-form-${studentName.replace(/\s+/g, '-')}`);
+            editForm.classList.remove('active');
+        }
+        
+        // Fungsi untuk update nama siswa
+        function updateStudentName(oldName) {
+            const newName = document.getElementById(`edit-student-${oldName.replace(/\s+/g, '-')}`).value.trim();
+            
+            if (!newName) {
+                alert('Nama siswa tidak boleh kosong!');
+                return;
+            }
+            
+            // Cek apakah nama baru sudah ada (kecuali nama yang sama)
+            const existingStudent = students.find(s => s.name.toLowerCase() === newName.toLowerCase() && s.name !== oldName);
+            if (existingStudent) {
+                alert(`Siswa dengan nama "${newName}" sudah ada!`);
+                return;
+            }
+            
+            // Update nama siswa di data siswa
+            const student = students.find(s => s.name === oldName);
+            if (student) {
+                student.name = newName;
+            }
+            
+            // Update nama siswa di semua tugas
+            assignments.forEach(assignment => {
+                const index = assignment.completedStudents.indexOf(oldName);
+                if (index !== -1) {
+                    assignment.completedStudents[index] = newName;
+                }
+            });
+            
+            // Simpan ke localStorage
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('assignments', JSON.stringify(assignments));
+            
+            // Perbarui tampilan
+            updateTeacherView();
+            updateStudentView();
+            
+            alert(`Nama siswa berhasil diubah dari "${oldName}" menjadi "${newName}"!`);
+        }
+        
+        // Fungsi hapus siswa
+        function removeStudent(name) {
+            if (confirm(`Apakah Anda yakin ingin menghapus siswa "${name}"?`)) {
+                students = students.filter(s => s.name !== name);
+                
+                // Hapus juga dari semua tugas
+                assignments.forEach(assignment => {
+                    assignment.completedStudents = assignment.completedStudents.filter(studentName => studentName !== name);
+                });
+                
+                localStorage.setItem('students', JSON.stringify(students));
+                localStorage.setItem('assignments', JSON.stringify(assignments));
+                updateTeacherView();
+                updateStudentView();
+            }
+        }
+        
+        // Fungsi edit poin siswa
+        function editStudentPoints(name) {
+            const student = students.find(s => s.name === name);
+            
+            if (student) {
+                const newPoints = prompt(`Edit poin untuk ${name}:`, student.points);
+                if (newPoints !== null && !isNaN(newPoints)) {
+                    student.points = parseInt(newPoints);
+                    localStorage.setItem('students', JSON.stringify(students));
+                    updateTeacherView();
+                    updateStudentView();
+                }
+            }
+        }
+        
+        // Fungsi edit tugas
+        function editAssignment(assignmentId) {
+            const assignment = assignments.find(a => a.id === assignmentId);
+            if (assignment) {
+                const newTitle = prompt('Edit nama tugas:', assignment.title);
+                if (newTitle !== null && newTitle.trim() !== '') {
+                    assignment.title = newTitle.trim();
+                    localStorage.setItem('assignments', JSON.stringify(assignments));
+                    updateTeacherView();
+                    updateStudentView();
+                }
+            }
+        }
+        
+        // Fungsi hapus tugas
+        function deleteAssignment(assignmentId) {
+            if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
+                assignments = assignments.filter(a => a.id !== assignmentId);
+                
+                // Hapus juga dari data siswa
+                students.forEach(student => {
+                    if (student.completedAssignments) {
+                        student.completedAssignments = student.completedAssignments.filter(id => id !== assignmentId);
+                    }
+                });
+                
+                localStorage.setItem('assignments', JSON.stringify(assignments));
+                localStorage.setItem('students', JSON.stringify(students));
+                updateTeacherView();
+                updateStudentView();
+            }
+        }
+        
+        // Inisialisasi
+        updateStudentView();
+    </script>
+</body>
+</html>
